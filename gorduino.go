@@ -15,20 +15,21 @@ func NewGorduino(port string, pins ...byte) *Gorduino {
 	g.pins = make(map[byte]bool)
 	g.client, _ = firmata.NewClient(port, 57600)
 	for _, pin := range pins {
-		g.pins[pin] = true
+		g.pins[pin] = false
 		g.client.SetPinMode(pin, firmata.Output)
 	}
 	return g
 }
 
 func (g *Gorduino) On(p byte) {
-	if g.pins[p] == true {
-		g.client.DigitalWrite(uint(p), true)
-	}
+	g.client.DigitalWrite(uint(p), true)
 }
 
 func (g *Gorduino) Off(p byte) {
-	if g.pins[p] == true {
-		g.client.DigitalWrite(uint(p), false)
-	}
+	g.client.DigitalWrite(uint(p), false)
+}
+
+func (g *Gorduino) Toggle(p byte) {
+	g.pins[p] = !g.pins[p]
+	g.client.DigitalWrite(uint(p), g.pins[p])
 }
