@@ -1,7 +1,8 @@
 package gorduino
 
 import (
-	"github.com/kraman/go-firmata"
+	"github.com/tarm/goserial"
+	"github.com/yanzay/go-firmata"
 )
 
 type Gorduino struct {
@@ -10,15 +11,23 @@ type Gorduino struct {
 	work   func()
 }
 
-func NewGorduino(port string, pins ...byte) *Gorduino {
+func NewGorduino(port string, pins ...byte) (*Gorduino, error) {
 	g := new(Gorduino)
 	g.pins = make(map[byte]bool)
-	g.client, _ = firmata.NewClient(port, 57600)
+
+	c := &serial.Config{Name: port, Baud: 57600}
+	conn, err := serial.OpenPort(c)
+	if err != nil {
+		return nil, err
+	}
+
+	g.client, _ = firmata.NewClient(conn)
+
 	for _, pin := range pins {
 		g.pins[pin] = false
 		g.client.SetPinMode(pin, firmata.Output)
 	}
-	return g
+	return g, nil
 }
 
 func (g *Gorduino) On(p byte) {
